@@ -1,5 +1,10 @@
-require "waterworks/version"
+require 'waterworks/version'
 
 module Waterworks
-  # Your code goes here...
+  require 'waterworks/resource'
+  require 'waterworks/extractor'
+
+  def self.run
+    puts 'todo: autoload extractors'
+  end
 end
