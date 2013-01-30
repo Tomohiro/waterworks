@@ -10,11 +10,10 @@ module Waterworks
     end
 
     def save
-      save_to = "#{@store}/#{series}/#{season}"
       mkdir(save_to)
-
       resources.each do |resource|
-        puts "wget -O '#{save_to}#{resource.destination}' '#{resource.source}'"
+        display_resource_info(resource)
+        system("wget -O '#{save_to}#{resource.destination}' '#{resource.source}'")
       end
     end
 
@@ -23,8 +22,8 @@ module Waterworks
         Nokogiri::HTML(open(url))
       end
 
-      def resource(name, uri, suffix = '')
-        Resource.new(name, uri, suffix)
+      def save_to
+        "#{@store}/#{series}/#{season}"
       end
 
       # return the series name
@@ -41,7 +40,13 @@ module Waterworks
 
     private
       def mkdir(path)
-        puts "mkdir -p #{path}"
+        Dir.mkdir(path) unless File.directory?(path)
+      end
+
+      def display_resource_info(resource)
+        puts "Save to: #{save_to}#{resource.destination}"
+        puts " Source: #{resource.source}"
+        puts "   Size: #{resource.size_mb} MB"
       end
   end
 end

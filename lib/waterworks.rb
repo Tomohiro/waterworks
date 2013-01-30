@@ -5,6 +5,11 @@ module Waterworks
   require 'waterworks/extractor'
 
   def self.run
-    puts 'todo: autoload extractors'
+    uri = ARGV.first
+    case uri
+    when /himado/
+      require 'waterworks/extractors/himado'
+      Himado.new(uri).save
+    end
   end
 end

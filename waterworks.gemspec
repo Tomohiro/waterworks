@@ -13,15 +13,13 @@ Gem::Specification.new do |gem|
   gem.homepage      = ''
   gem.license       = 'MIT'
 
-  gem.files         = `git ls-files`.split($/)
+  gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}) { |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ['lib']
 
   gem.add_runtime_dependency 'mechanize'
   gem.add_runtime_dependency 'nokogiri'
-  gem.add_runtime_dependency 'downloader'
-  gem.add_runtime_dependency 'progressbar'
 
   gem.add_development_dependency 'rake'
 end
