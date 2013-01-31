@@ -38,6 +38,27 @@ module Waterworks
       # return the download file path list
       def resources; end
 
+      def http_response_headers(uri, redirect_limit = 5)
+        raise ArgumentError, 'HTTP redirect too deep' if redirect_limit == 0
+  
+        uri = URI.parse(uri)
+        headers = {}
+
+        Net::HTTP.start(uri.host) do |http|
+          headers = http.head(uri.path)
+        end
+  
+        case headers
+        when Net::HTTPOK
+          headers
+        when Net::HTTPFound
+          uri = headers['Location']
+          http_response_headers(uri, redirect_limit - 1)
+        end
+
+        headers
+      end
+
     private
       def mkdir(path)
         Dir.mkdir(path) unless File.directory?(path)
