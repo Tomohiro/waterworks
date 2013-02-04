@@ -15,7 +15,7 @@ class Railscasts < Waterworks::Extractor
     video_uri  = video_location
     video_size = file_size(video_uri)
 
-    [Waterworks::Resource.new(title, video_uri, '.mp4', video_size)]
+    [Waterworks::Resource.new(uri: video_uri, name: title, suffix: '.mp4', size: video_size)]
   end
 
   private

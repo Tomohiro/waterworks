@@ -1,10 +1,10 @@
 module Waterworks
   class Resource
-    def initialize(name, uri, suffix = '', size = 0)
-      @name   = name
-      @uri    = uri
-      @suffix = suffix
-      @size   = size
+    def initialize(params)
+      @uri    = params.fetch(:uri)
+      @name   = params.fetch(:name, File.basename(@uri))
+      @suffix = params.fetch(:suffix, nil)
+      @size   = params.fetch(:size, 0)
     end
 
     def destination

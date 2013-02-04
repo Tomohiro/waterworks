@@ -21,9 +21,7 @@ class Himado < Waterworks::Extractor
 
       if high_definition?(size)
         puts "Found high definition movie"
-        puts
-        puts
-        return [Waterworks::Resource.new(title, movie_uri, '.m4v', size)]
+        return [Waterworks::Resource.new(uri: movie_uri, name: title, suffix: '.m4v', size: size)]
       end
     end
     resources

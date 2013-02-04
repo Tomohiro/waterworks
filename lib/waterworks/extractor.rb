@@ -52,7 +52,7 @@ module Waterworks
       end
 
       def save_to
-        "#{@store}/#{series}/#{season}"
+        "#{@store}/#{series}/#{season}/"
       end
 
       # return the domain
