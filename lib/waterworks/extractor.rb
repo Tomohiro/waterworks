@@ -21,7 +21,7 @@ module Waterworks
       def extractor_file_paths
         [
           File.expand_path("#{ENV['HOME']}/.waterworks/extractors/*.rb"),
-          File.expand_path('./lib/waterworks/extractors/*.rb')
+          File.expand_path('../../../lib/waterworks/extractors/*.rb', __FILE__)
         ]
       end
     end
