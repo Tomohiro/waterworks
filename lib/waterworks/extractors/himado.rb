@@ -1,4 +1,8 @@
 class Himado < Waterworks::Extractor
+  def domain
+    'http://himado.in'
+  end
+
   def series
     @agent.search('span#seriestag/a').text
   end
@@ -13,9 +17,10 @@ class Himado < Waterworks::Extractor
       puts "Found source: #{movie_uri}"
 
       size = movie_size(movie_uri)
-      puts " checking size... #{(size / 1024 / 1024)}"
+      puts "    Checking size... #{(size / 1024 / 1024)}"
 
       if high_definition?(size)
+        puts "    Found"
         return [Waterworks::Resource.new(title, movie_uri, '.m4v', size)]
       end
     end
@@ -25,7 +30,7 @@ class Himado < Waterworks::Extractor
   private
     def movie_mirror_locations
       @agent.search('#select_othersource/option').each do |option|
-        agent("http://himado.in/#{option.attributes['value']}").search('script').each do |js|
+        agent("#{domain}/#{option.attributes['value']}").search('script').each do |js|
           next unless js.text =~ /display_movie_url = '(?<movie>.+)';/
 
           movie_uri = URI.unescape($~[:movie])
