@@ -16,7 +16,7 @@ class Himado < Waterworks::Extractor
     movie_mirror_locations do |movie_uri|
       puts "Found source: #{movie_uri}"
 
-      size = movie_size(movie_uri)
+      size = file_size(movie_uri)
       puts "    Checking size... #{(size / 1024 / 1024)}"
 
       if high_definition?(size)
@@ -39,13 +39,6 @@ class Himado < Waterworks::Extractor
           yield headers['Location'] || movie_uri
         end
       end
-    end
-
-    def movie_size(uri)
-      headers = http_response_headers(uri)
-      movie_source_not_found = 0
-
-      headers.fetch('content-length', movie_source_not_found).to_i
     end
 
     def high_definition?(movie_size)

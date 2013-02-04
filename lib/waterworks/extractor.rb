@@ -99,6 +99,13 @@ module Waterworks
         Net::HTTP::Proxy(proxy.host, proxy.port)
       end
 
+      def file_size(uri)
+        file_headers   = http_response_headers(uri)
+        file_not_found = 0
+
+        file_headers.fetch('content-length', file_not_found).to_i
+      end
+
     private
       def mkdir(path)
         Dir.mkdir(path) unless File.directory?(path)
