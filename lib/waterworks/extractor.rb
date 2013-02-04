@@ -4,12 +4,39 @@ require 'nokogiri'
 
 module Waterworks
   class Extractor
-    def initialize(url, store = '~/Downloads')
-      @agent = agent(url)
+    class << self
+      def matches(uri)
+        Dir.glob(extractor_file_paths).each do |file|
+          require file
+          klass = eval(filename_classify(File.basename(file, '.rb'))).new
+          next unless klass.match?(uri)
+          yield klass
+        end
+      end
+
+      def filename_classify(filename)
+        filename.split('_').map(&:capitalize).join
+      end
+
+      def extractor_file_paths
+        [
+          File.expand_path("#{ENV['HOME']}/.waterworks/extractors/*.rb"),
+          File.expand_path('./lib/waterworks/extractors/*.rb')
+        ]
+      end
+    end
+
+    def initialize(store = '~/Downloads')
       @store = File.expand_path(store)
     end
 
-    def save
+    def match?(uri)
+      uri =~ /#{domain}/
+    end
+
+    def save(uri)
+      @agent = agent(uri)
+
       mkdir(save_to)
       resources.each do |resource|
         display_resource_info(resource)
@@ -20,11 +47,16 @@ module Waterworks
     protected
       def agent(url)
         Nokogiri::HTML(open(url))
+      rescue Exception => e
+        abort e.to_s
       end
 
       def save_to
         "#{@store}/#{series}/#{season}"
       end
+
+      # return the domain
+      def domain; end
 
       # return the series name
       def series; end
@@ -40,14 +72,14 @@ module Waterworks
 
       def http_response_headers(uri, redirect_limit = 5)
         raise ArgumentError, 'HTTP redirect too deep' if redirect_limit == 0
-  
+
         uri = URI.parse(uri)
         headers = {}
 
-        Net::HTTP.start(uri.host) do |http|
+        http_request.start(uri.host) do |http|
           headers = http.head(uri.path)
         end
-  
+
         case headers
         when Net::HTTPOK
           headers
@@ -57,6 +89,14 @@ module Waterworks
         end
 
         headers
+      end
+
+      def http_request
+        proxy_uri = ENV['https_proxy'] || ENV['http_proxy'] || false
+        return Net::HTTP unless proxy_uri
+
+        proxy = URI.parse(proxy_uri)
+        Net::HTTP::Proxy(proxy.host, proxy.port)
       end
 
     private
