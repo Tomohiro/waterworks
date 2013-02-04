@@ -1,4 +1,5 @@
 require 'open-uri'
+require 'fileutils'
 require 'mechanize'
 require 'nokogiri'
 
@@ -42,6 +43,8 @@ module Waterworks
         display_resource_info(resource)
         system("wget -O '#{save_to}#{resource.destination}' '#{resource.source}'")
       end
+    rescue Exception => e
+      abort e.to_s
     end
 
     protected
@@ -108,7 +111,7 @@ module Waterworks
 
     private
       def mkdir(path)
-        Dir.mkdir(path) unless File.directory?(path)
+        FileUtils.mkdir_p(path) unless File.directory?(path)
       end
 
       def display_resource_info(resource)
