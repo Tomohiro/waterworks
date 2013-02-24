@@ -74,7 +74,10 @@ module Waterworks
       def resources; end
 
       def http_response_headers(uri, redirect_limit = 5)
-        raise ArgumentError, 'HTTP redirect too deep' if redirect_limit == 0
+        if redirect_limit == 0
+          puts "HTTP redirect too deep => #{uri}"
+          return uri
+        end
 
         uri = URI.parse(uri)
         headers = {}
