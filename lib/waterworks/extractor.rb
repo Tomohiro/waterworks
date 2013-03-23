@@ -55,7 +55,7 @@ module Waterworks
       end
 
       def save_to
-        "#{@store}/#{series}/#{season}/"
+        [@store, series, season].join('/')
       end
 
       # return the domain
