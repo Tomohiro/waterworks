@@ -20,7 +20,7 @@ class Himado < Waterworks::Extractor
       puts "Checking size: #{(size / 1024 / 1024)} MB"
 
       if high_definition?(size)
-        puts "Found high definition movie"
+        puts 'Found high definition movie'
         return [Waterworks::Resource.new(uri: movie_uri, name: title, suffix: '.m4v', size: size)]
       end
     end
@@ -32,11 +32,18 @@ class Himado < Waterworks::Extractor
       @agent.search('#select_othersource/option').each do |option|
         agent("#{domain}/#{option.attributes['value']}").search('script').each do |js|
           next unless js.text =~ /display_movie_url = '(?<movie>.+)';/
-
           movie_uri = URI.unescape($~[:movie])
-          headers = http_response_headers(movie_uri)
 
-          yield headers['Location'] || movie_uri
+          begin
+            headers = http_response_headers(movie_uri)
+            yield headers['Location'] || movie_uri
+          rescue Net::ReadTimeout
+            puts "HTTP response headers timeout => #{movie_uri}"
+            next
+          rescue => e
+            puts e
+            next
+          end
         end
       end
     end
