@@ -8,9 +8,9 @@ Gem::Specification.new do |gem|
   gem.version       = Waterworks::VERSION
   gem.authors       = ['Tomohiro TAIRA']
   gem.email         = ['tomohiro.t@gmail.com']
-  gem.description   = %q{Pluggable downloader}
-  gem.summary       = %q{Pluggable downloader}
-  gem.homepage      = ''
+  gem.description   = 'Pluggable downloader'
+  gem.summary       = 'Pluggable downloader'
+  gem.homepage      = 'https://github.com/Tomohiro/waterworks'
   gem.license       = 'MIT'
 
   gem.files         = `git ls-files`.split($\)
