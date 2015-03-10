@@ -1,18 +1,16 @@
 module Waterworks
   class Resource
+    attr_reader :source
+
     def initialize(params)
-      @uri    = params.fetch(:uri)
-      @name   = params.fetch(:name, File.basename(@uri))
+      @source = params.fetch(:uri)
+      @name   = params.fetch(:name, File.basename(source))
       @suffix = params.fetch(:suffix, nil)
       @size   = params.fetch(:size, 0)
     end
 
     def destination
-      "#{@name}#{@suffix}".gsub('/', '-')
-    end
-
-    def source
-      @uri
+      [@name, @suffix].join.gsub('/', '-')
     end
 
     def size_mb

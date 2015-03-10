@@ -5,6 +5,8 @@ require 'nokogiri'
 
 module Waterworks
   class Extractor
+    attr_reader :uri
+
     class << self
       def matches(uri)
         Dir.glob(extractor_file_paths).each do |file|
@@ -24,104 +26,119 @@ module Waterworks
       end
     end
 
-    def initialize(store = '~/Downloads')
-      @store = File.expand_path(store)
-    end
-
     def match?(uri)
       uri =~ /#{domain}/
     end
 
     def save(uri)
-      @agent = agent(uri)
+      @uri   = uri
+      @agent = agent(@uri)
 
       mkdir(save_to)
       resources.each do |resource|
         display_resource_info(resource)
-        system("wget --referer #{@uri} -U #{user_agent} -O '#{save_to}/#{resource.destination}' '#{resource.source}'")
+        wget(
+          resource.source,
+          '--referer' => uri,
+          '-U'        => "'#{user_agent}'",
+          '-O'        => "'#{save_to}/#{resource.destination}'"
+        )
       end
-    rescue Exception => e
+    rescue StandardError => e
       abort e.to_s
     end
 
     protected
-      def agent(url)
-        Nokogiri::HTML(open(url))
-      rescue Exception => e
-        abort e.to_s
+
+    def wget(uri, options = {})
+      system("wget #{options.flatten.join(' ')} '#{uri}'")
+    end
+
+    def agent(url)
+      Nokogiri::HTML(open(url))
+    rescue StandardError => e
+      abort e.to_s
+    end
+
+    def user_agent
+      'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0'
+    end
+
+    def save_to
+      [store, series, season].compact.join('/')
+    end
+
+    # Store the download destination directory
+    def store
+      @store ||= File.expand_path('~/Downloads')
+    end
+
+    # Returns the target domain
+    def domain; end
+
+    # Returns the series name
+    def series; end
+
+    # Returns the season name
+    def season; end
+
+    # Returns the title
+    def title; end
+
+    # Return the resource instances
+    #
+    # @return [Array<Waterworks::Resource>]
+    def resources; end
+
+    def http_response_headers(uri, redirect_limit = 5)
+      if redirect_limit == 0
+        puts "HTTP redirect too deep => #{uri}"
+        return uri
       end
 
-      def user_agent
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:36.0) Gecko/20100101 Firefox/36.0'
+      uri = URI.parse(uri)
+      headers = {}
+
+      http_request.start(uri.host) do |http|
+        headers = http.head(uri.path)
       end
 
-      def save_to
-        [@store, series, season].join('/')
-      end
-
-      # return the domain
-      def domain; end
-
-      # return the series name
-      def series; end
-
-      # return the season name
-      def season; end
-
-      # return the title
-      def title; end
-
-      # return the download file path list
-      def resources; end
-
-      def http_response_headers(uri, redirect_limit = 5)
-        if redirect_limit == 0
-          puts "HTTP redirect too deep => #{uri}"
-          return uri
-        end
-
-        uri = URI.parse(uri)
-        headers = {}
-
-        http_request.start(uri.host) do |http|
-          headers = http.head(uri.path)
-        end
-
-        case headers
-        when Net::HTTPOK
-          headers
-        when Net::HTTPFound
-          uri = headers['Location']
-          http_response_headers(uri, redirect_limit - 1)
-        end
-
+      case headers
+      when Net::HTTPOK
         headers
+      when Net::HTTPFound
+        uri = headers['Location']
+        http_response_headers(uri, redirect_limit - 1)
       end
 
-      def http_request
-        proxy_uri = ENV['https_proxy'] || ENV['http_proxy'] || false
-        return Net::HTTP unless proxy_uri
+      headers
+    end
 
-        proxy = URI.parse(proxy_uri)
-        Net::HTTP::Proxy(proxy.host, proxy.port)
-      end
+    def http_request
+      proxy_uri = ENV['https_proxy'] || ENV['http_proxy'] || false
+      return Net::HTTP unless proxy_uri
 
-      def file_size(uri)
-        file_headers   = http_response_headers(uri)
-        file_not_found = 0
+      proxy = URI.parse(proxy_uri)
+      Net::HTTP::Proxy(proxy.host, proxy.port)
+    end
 
-        file_headers.fetch('content-length', file_not_found).to_i
-      end
+    def file_size(uri)
+      file_headers   = http_response_headers(uri)
+      file_not_found = 0
+
+      file_headers.fetch('content-length', file_not_found).to_i
+    end
 
     private
-      def mkdir(path)
-        FileUtils.mkdir_p(path) unless File.directory?(path)
-      end
 
-      def display_resource_info(resource)
-        puts "Save to: #{save_to}#{resource.destination}"
-        puts " Source: #{resource.source}"
-        puts "   Size: #{resource.size_mb} MB"
-      end
+    def mkdir(path)
+      FileUtils.mkdir_p(path) unless File.directory?(path)
+    end
+
+    def display_resource_info(resource)
+      puts "Save to: #{save_to}#{resource.destination}"
+      puts " Source: #{resource.source}"
+      puts "   Size: #{resource.size_mb} MB"
+    end
   end
 end
