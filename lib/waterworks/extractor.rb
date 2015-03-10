@@ -38,7 +38,7 @@ module Waterworks
       mkdir(save_to)
       resources.each do |resource|
         display_resource_info(resource)
-        system("wget -O '#{save_to}#{resource.destination}' '#{resource.source}'")
+        system("wget --referer #{@uri} -U #{user_agent} -O '#{save_to}/#{resource.destination}' '#{resource.source}'")
       end
     rescue Exception => e
       abort e.to_s
@@ -49,6 +49,10 @@ module Waterworks
         Nokogiri::HTML(open(url))
       rescue Exception => e
         abort e.to_s
+      end
+
+      def user_agent
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:36.0) Gecko/20100101 Firefox/36.0'
       end
 
       def save_to
