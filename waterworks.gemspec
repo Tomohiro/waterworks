@@ -8,8 +8,8 @@ Gem::Specification.new do |gem|
   gem.version       = Waterworks::VERSION
   gem.authors       = ['Tomohiro TAIRA']
   gem.email         = ['tomohiro.t@gmail.com']
-  gem.description   = %q{Download tools}
-  gem.summary       = %q{Download tools}
+  gem.description   = %q{Pluggable downloader}
+  gem.summary       = %q{Pluggable downloader}
   gem.homepage      = ''
   gem.license       = 'MIT'
 
